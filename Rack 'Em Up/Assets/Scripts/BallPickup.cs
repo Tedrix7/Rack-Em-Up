@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class PlayerBallHandler : MonoBehaviour
 {
@@ -8,16 +9,15 @@ public class PlayerBallHandler : MonoBehaviour
 
     void Start()
     {
-        // Spawn and hold the ball at the start
         SpawnAndHoldBall();
     }
 
     void Update()
     {
-        // Only shoot when left mouse button is clicked
-        if (Input.GetMouseButtonDown(0))
+        // Shoot when left mouse button is clicked, but only if we have a ball
+        if (Input.GetMouseButtonDown(0) && heldBall != null)
         {
-            ShootBall(5f);  // Adjust force as needed
+            ShootBall(6f);  // Adjust force as needed
         }
     }
 
@@ -49,32 +49,39 @@ public class PlayerBallHandler : MonoBehaviour
 
     void ShootBall(float force)
     {
-        if (heldBall != null)
+        Rigidbody rb = heldBall.GetComponent<Rigidbody>();
+        if (rb != null)
         {
-            Rigidbody rb = heldBall.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                // Enable physics and detach from hand
-                rb.isKinematic = false;
-                heldBall.transform.SetParent(null);
+            // Detach from hand
+            heldBall.transform.SetParent(null);
 
-                // Create a forward + upward throw direction to simulate arc
-                Vector3 throwDirection = (handPosition.forward + handPosition.up * 0.5f).normalized;
+            // Enable physics to make it fly
+            rb.isKinematic = false;
 
-                // Apply impulse force in the direction of the throw
-                rb.AddForce(throwDirection * force, ForceMode.Impulse);
-            }
-            else
-            {
-                Debug.LogError("Held ball is missing Rigidbody!");
-            }
-
-            // Clear heldBall reference
-            heldBall = null;
+            // Create a forward + upward arc direction
+            Vector3 throwDirection = (handPosition.forward + handPosition.up * 0.5f).normalized;
+            rb.AddForce(throwDirection * force, ForceMode.Impulse);
         }
         else
         {
-            Debug.Log("No ball to shoot!");
+            Debug.LogError("Held ball is missing Rigidbody!");
+        }
+
+        // Clear heldBall to indicate the hand is now empty
+        heldBall = null;
+
+        // Start coroutine to spawn a new ball after 3 seconds
+        StartCoroutine(RespawnBallAfterDelay(1f));
+    }
+
+    IEnumerator RespawnBallAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        // Only spawn a new ball if hand is empty
+        if (heldBall == null)
+        {
+            SpawnAndHoldBall();
         }
     }
 }

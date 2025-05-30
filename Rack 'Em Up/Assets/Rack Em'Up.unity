@@ -731,7 +731,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerCamera: {fileID: 806222238}
   walkSpeed: 4
-  runSpeed: 8
+  runSpeed: 6
   jumpPower: 3
   gravity: 10
   lookSpeed: 2
@@ -983,7 +983,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -560, y: -50}
+  m_AnchoredPosition: {x: -570, y: -50}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1307635815
@@ -1006,7 +1006,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Streak: 0
+  m_text: 'Streak:0
 
 '
   m_isRightToLeft: 0

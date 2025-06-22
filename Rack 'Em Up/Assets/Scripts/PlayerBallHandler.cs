@@ -7,20 +7,29 @@ public class PlayerBallHandler : MonoBehaviour
     public Transform handPosition;
     public GameObject ballPrefab;
     public TMP_Text streakText;
+    public TMP_Text coinText;
 
     private GameObject heldBall;
     private int streak = 0;
+    private int misses = 0;
     private bool lastShotScored = false;
-    private bool missed = false;  // Track if last shot was a miss
-    private Coroutine missCheckCoroutine;
+
+    public int coins = 0;
+    private int coinMultiplier = 1;
+    private bool missProtection = false;
 
     void Start()
     {
         SpawnAndHoldBall();
+        UpdateStreakText();
+        UpdateCoinUI();
     }
 
     void Update()
     {
+        if (BoostShop.IsShopActive)
+            return;
+
         if (Input.GetMouseButtonDown(0) && heldBall != null)
         {
             ShootBall(6f);
@@ -52,10 +61,10 @@ public class PlayerBallHandler : MonoBehaviour
 
         lastShotScored = false;
 
-        StartCoroutine(CheckForMiss(1f));  // Wait 3 seconds to detect miss
+        StartCoroutine(CheckForMiss(3f));
+        StartCoroutine(RespawnBallAfterDelay(1f));
 
         heldBall = null;
-        StartCoroutine(RespawnBallAfterDelay(1f));
     }
 
     IEnumerator RespawnBallAfterDelay(float delay)
@@ -70,12 +79,26 @@ public class PlayerBallHandler : MonoBehaviour
 
         if (!lastShotScored)
         {
-            missed = true;
-            if (streakText != null)
+            if (missProtection)
             {
-                streakText.text = "Miss";
+                Debug.Log("Miss ignored due to protection.");
+                yield break;
             }
-            Debug.Log("Missed shot!");
+            misses++;
+            if (misses >= 3)
+            {
+                streak = 0;
+                misses = 0;
+                streakText.text = "Reset!";
+                yield return new WaitForSeconds(1.5f);
+                UpdateStreakText();
+            }
+            else
+            {
+                streakText.text = "Miss: " + misses + "/3";
+            }
+
+            Debug.Log("Missed shot! (" + misses + "/3), -10 coins");
         }
     }
 
@@ -83,11 +106,39 @@ public class PlayerBallHandler : MonoBehaviour
     {
         lastShotScored = true;
         streak++;
-        missed = false;  // Reset missed state
-        if (streakText != null)
+        misses = 0;
+
+        if (streak % 10 == 0)
         {
-            streakText.text = "Streak: " + streak;
+            int earned = 50 * coinMultiplier;
+            coins += earned;
+            Debug.Log($"+{earned} coins for streak!");
+            UpdateCoinUI();
         }
+
+        UpdateStreakText();
         Debug.Log("Score! Current streak: " + streak);
+    }
+
+    void UpdateStreakText()
+    {
+        if (streakText != null)
+            streakText.text = "Streak: " + streak;
+    }
+
+    public void UpdateCoinUI()
+    {
+        if (coinText != null)
+            coinText.text = "Coins: " + coins;
+    }
+
+    public void SetMissProtection(bool active)
+    {
+        missProtection = active;
+    }
+
+    public void SetCoinMultiplier(int multiplier)
+    {
+        coinMultiplier = multiplier;
     }
 }

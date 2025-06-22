@@ -5,7 +5,7 @@ public class MainMenuUI : MonoBehaviour
 {
     public void PlayGame()
     {
-        SceneManager.LoadScene("Rack 'Em Up"); // Exact name of your game scene
+        SceneManager.LoadScene("Rack Em'Up"); // Exact name of your game scene
     }
 
     public void QuitGame()
